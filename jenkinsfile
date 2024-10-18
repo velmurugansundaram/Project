@@ -2,9 +2,9 @@ pipeline {
     agent any 
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub'
-        DB_CREDENTIALS_ID = 'mysql-credentials'
-        GITHUB_CREDENTIALS_ID = 'github-credentials'
+        DOCKER_CREDENTIALS_ID = 'dockerhub'       // Docker Hub credentials
+        DB_CREDENTIALS_ID = 'mysql-credentials'   // MySQL credentials
+        GITHUB_CREDENTIALS_ID = 'github-credentials' // GitHub SSH credentials
     }
 
     stages {
