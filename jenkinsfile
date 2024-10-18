@@ -5,7 +5,6 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'dockerhub'           // Docker Hub credentials
         DB_CREDENTIALS_ID = 'mysql-credentials'       // MySQL credentials
         GITHUB_CREDENTIALS_ID = 'github-credentials'  // GitHub SSH credentials
-        SSH_PASSPHRASE_CREDENTIALS_ID = 'ssh-passphrase'  // Passphrase for SSH key
     }
 
     stages {
