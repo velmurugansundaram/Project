@@ -11,11 +11,11 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: GITHUB_CREDENTIALS_ID, passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USERNAME')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: GITHUB_CREDENTIALS_ID, keyFileVariable: 'GIT_SSH_KEY')]) {
                         sh '''
-                        git config --global credential.helper store
-                        echo "https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@github.com" > ~/.git-credentials
-                        git clone https://github.com/velmurugansundaram/Project.git
+                        eval `ssh-agent -s`
+                        ssh-add $GIT_SSH_KEY
+                        git clone git@github.com:velmurugansundaram/Project.git
                         '''
                     }
                 }
