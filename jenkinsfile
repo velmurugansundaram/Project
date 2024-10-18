@@ -1,0 +1,55 @@
+pipeline {
+    agent any 
+
+    environment {
+        DOCKER_CREDENTIALS_ID = 'dockerhub'
+        DB_CREDENTIALS_ID = 'mysql-credentials'
+        GITHUB_CREDENTIALS_ID = 'github-credentials'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: GITHUB_CREDENTIALS_ID, passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USERNAME')]) {
+                        sh '''
+                        git config --global credential.helper store
+                        echo "https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@github.com" > ~/.git-credentials
+                        git clone https://github.com/velmurugansundaram/Project.git
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
+                }
+                sh 'docker build -t your-image-name .'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing...'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: DB_CREDENTIALS_ID, variable: 'MYSQL_ROOT_PASSWORD')]) {
+                        sh '''
+                        echo "MySQL Root Password: $MYSQL_ROOT_PASSWORD"
+                        '''
+                    }
+                }
+                echo 'Deploying...'
+            }
+        }
+    }
+}
