@@ -1,20 +1,22 @@
-pipeline {
+ipipeline {
     agent any 
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub'       // Docker Hub credentials
-        DB_CREDENTIALS_ID = 'mysql-credentials'   // MySQL credentials
-        GITHUB_CREDENTIALS_ID = 'github-credentials' // GitHub SSH credentials
+        DOCKER_CREDENTIALS_ID = 'dockerhub'           // Docker Hub credentials
+        DB_CREDENTIALS_ID = 'mysql-credentials'       // MySQL credentials
+        GITHUB_CREDENTIALS_ID = 'github-credentials'  // GitHub SSH credentials
+        SSH_PASSPHRASE_CREDENTIALS_ID = 'ssh-passphrase'  // Passphrase for SSH key
     }
 
     stages {
         stage('Clone Repository') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: GITHUB_CREDENTIALS_ID, keyFileVariable: 'GIT_SSH_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: GITHUB_CREDENTIALS_ID, keyFileVariable: 'GIT_SSH_KEY'),
+                                     string(credentialsId: SSH_PASSPHRASE_CREDENTIALS_ID, variable: 'SSH_PASSPHRASE')]) {
                         sh '''
                         eval `ssh-agent -s`
-                        ssh-add $GIT_SSH_KEY
+                        echo $SSH_PASSPHRASE | ssh-add $GIT_SSH_KEY
                         git clone git@github.com:velmurugansundaram/Project.git
                         '''
                     }
@@ -29,13 +31,13 @@ pipeline {
                         sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
                     }
                 }
-                sh 'docker build -t your-image-name .'
+                sh 'docker build -t velmurugansundaram/project-image .'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Testing...'
+                echo 'Running tests...'
             }
         }
 
@@ -44,11 +46,11 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: DB_CREDENTIALS_ID, variable: 'MYSQL_ROOT_PASSWORD')]) {
                         sh '''
-                        echo "MySQL Root Password: $MYSQL_ROOT_PASSWORD"
+                        echo "Deploying with MySQL Root Password: $MYSQL_ROOT_PASSWORD"
                         '''
                     }
                 }
-                echo 'Deploying...'
+                echo 'Deploying application...'
             }
         }
     }
